@@ -7,7 +7,6 @@
 import {homedir} from 'os';
 import {join} from 'path';
 
-import {cosmiconfigSync} from 'cosmiconfig';
 import type {Configuration, Product} from 'puppeteer-core';
 
 function getBooleanEnvVar(name: string) {
@@ -43,10 +42,14 @@ function isSupportedProduct(product: unknown): product is Product {
  * @internal
  */
 export const getConfiguration = (): Configuration => {
-  const result = cosmiconfigSync('puppeteer', {
-    searchStrategy: 'global',
-  }).search();
-  const configuration: Configuration = result ? result.config : {};
+  const cacheDir = process.env['BLOCKLET_CACHE_DIR'] as string;
+  const cacheDirectory = join(cacheDir, 'puppeteer', 'cache');
+  const temporaryDirectory = join(cacheDir, 'puppeteer', 'tmp');
+
+  const configuration: Configuration = {
+    cacheDirectory,
+    temporaryDirectory,
+  };
 
   configuration.logLevel = (process.env['PUPPETEER_LOGLEVEL'] ??
     process.env['npm_config_LOGLEVEL'] ??
